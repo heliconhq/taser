@@ -4,6 +4,8 @@ PROJECT = taser
 
 DEPS = lager gun
 
+TEST_DEPS = jsx
+
 LOCAL_DEPS = inets
 
 include erlang.mk
