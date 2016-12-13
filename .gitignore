@@ -1,0 +1,15 @@
+.DS_Store
+
+*.beam
+deps/*
+ebin/*
+erl_crash.dump
+/log
+/logs
+/.rebar
+/taser.d
+
+/_build
+/.rebar3
+/rebar.lock
+/.erlang.mk
