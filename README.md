@@ -4,10 +4,11 @@ A *really* simple synchronous wrapper around `gun`.
 
 Features:
 
-- Synchronous API
+- No frills synchronous API
 - Follow redirects automatically
 - Various timeout settings
 - Deflates gzipped data
+- Support for basic auth
 
 Examples:
 

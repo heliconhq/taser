@@ -39,6 +39,7 @@
         streamref,
 
         protocol,
+        auth,
         hostname,
         port,
         method,
@@ -97,14 +98,14 @@ request(Method, URL, Headers, Opts) ->
             Error
     end.
 
-raw_request(Method, {Protocol, _Auth, Hostname, Port , Path, Query,
+raw_request(Method, {Protocol, Auth, Hostname, Port , Path, Query,
                      CombinedPath}, Headers, Opts) ->
     GunOpts = gun_opts(Protocol, Opts),
     {ok, ConnPid} = gun:open(Hostname, Port, GunOpts),
     lager:info("ConnPid: ~p", [ConnPid]),
     MRef = erlang:monitor(process, ConnPid),
-    State = initial_state(ConnPid, MRef, Protocol, Hostname, Port, Method,
-                          Path, Query, CombinedPath, Headers, Opts),
+    State = initial_state(ConnPid, MRef, Protocol, Auth, Hostname, Port,
+                          Method, Path, Query, CombinedPath, Headers, Opts),
     handle_connection(State, maps:get(data, Opts, <<>>)).
 
 handle_connection(State = #state{ conn_pid = ConnPid, mref = MRef, method =
@@ -247,8 +248,8 @@ gun_opts(Protocol, _Opts) ->
         transport => transport(Protocol)
     }.
 
-initial_state(ConnPid, MRef, Protocol, Hostname, Port, Method, Path, Query,
-              CombinedPath, RequestHeaders, Opts) ->
+initial_state(ConnPid, MRef, Protocol, Auth, Hostname, Port, Method, Path,
+              Query, CombinedPath, RequestHeaders, Opts) ->
     #state { 
         conn_pid = ConnPid,
         mref = MRef,
@@ -259,6 +260,7 @@ initial_state(ConnPid, MRef, Protocol, Hostname, Port, Method, Path, Query,
         max_redirects = maps:get(max_redirects, Opts, 5),
 
         protocol = Protocol,
+        auth = Auth,
         hostname = Hostname,
         port = Port,
         method = method(Method),
@@ -266,8 +268,15 @@ initial_state(ConnPid, MRef, Protocol, Hostname, Port, Method, Path, Query,
         query = Query,
         combined_path = CombinedPath,
 
-        request_headers = RequestHeaders
+        request_headers = maybe_add_auth(Auth, RequestHeaders)
     }.
+
+maybe_add_auth([], Headers) ->
+    Headers;
+
+maybe_add_auth(Auth, Headers) ->
+    Auth64 = base64:encode(Auth),
+    [{<<"Authorization">>, <<"Basic ", Auth64/binary>>}|Headers].
 
 transport(http) ->
     tcp;
