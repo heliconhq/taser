@@ -65,7 +65,6 @@ request(Method, URL, Headers, Opts) when is_binary(URL) ->
     request(Method, binary_to_list(URL), Headers, Opts);
 
 request(Method, URL, Headers, Opts) ->
-    lager:info("Requesting URL: ~p", [URL]),
     case taser_utils:parse_uri(URL) of
         {ok, ParsedURL} ->
             taser_gun:request(Method, ParsedURL, Headers, Opts);

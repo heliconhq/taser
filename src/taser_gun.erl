@@ -45,7 +45,6 @@ request(Method, {Protocol, Auth, Hostname, Port, Path, Query, CombinedPath},
         Headers, Opts) ->
     GunOpts = gun_opts(Protocol, Opts),
     {ok, ConnPid} = gun:open(Hostname, Port, GunOpts),
-    lager:info("ConnPid: ~p", [ConnPid]),
     MRef = erlang:monitor(process, ConnPid),
     State = initial_state(ConnPid, MRef, Protocol, Auth, Hostname, Port,
                           Method, Path, Query, CombinedPath, Headers, Opts),
@@ -114,9 +113,7 @@ maybe_follow_redirect(_Finished, #state{ conn_pid = ConnPid, max_redirects =
         false ->
             {error, redirect_without_location};
         {<<"location">>, Location} ->
-            lager:info("Location: ~p", [Location]),
             %% TODO: Reset response timeout?
-            lager:info("Max redirects: ~p", [MaxRedirects]),
             if
                 MaxRedirects =< 0 ->
                     {error, max_redirects};
