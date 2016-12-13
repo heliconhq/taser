@@ -34,6 +34,5 @@ Examples:
   json, files?)
 - Max body size
 - Send timeout?
-- Authentication
 - Tests and stuff
 - Option to skip body?
