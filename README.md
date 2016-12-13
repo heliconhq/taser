@@ -23,6 +23,9 @@ Examples:
         data => <<"Hello world!">>
     }).
 
+    {ok, StatusCode, RespHeaders, Body} =
+        taser:get("http://user:passwd@httpbin.org/basic-auth/user/passwd").
+
 ## TODO:
 
 - Check status on gzip bombs
