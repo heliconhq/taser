@@ -51,6 +51,8 @@ tokenize_querystring(Query) ->
 %% @doc Process a list of key-value tuples, urlencode all keys and values and
 %% separate them with an equal sign (=), separate all pairs with an ampersand
 %% (&) and return a string.
+urlencode_pairs(Tokens) when is_map(Tokens) ->
+    urlencode_pairs(maps:to_list(Tokens));
 urlencode_pairs(Tokens) ->
     lists:flatten(lists:join("&", [urlencode(Key) ++ "=" ++ urlencode(Value)
                                    || {Key, Value} <- Tokens])).

@@ -8,6 +8,7 @@
 
 -export([get/1]).
 -export([redirect/1]).
+-export([post_form/1]).
 -export([basic_auth/1]).
 
 %% Callbacks
@@ -16,6 +17,7 @@ all() ->
     [
         get,
         redirect,
+        post_form,
         basic_auth
     ].
 
@@ -33,6 +35,12 @@ get(_Config) ->
     {ok, 200, _Headers2, Body2} = taser:get("http://httpbin.org/get?a=b"),
     #{ <<"args">> := #{ <<"a">> := <<"b">> } } =
         jsx:decode(Body2, [return_maps]),
+    ok.
+
+post_form(_Config) ->
+    {ok, 200, _Headers1, Body1} = taser:post_form("http://httpbin.org/post", #{ a => b }),
+    #{ <<"form">> := #{ <<"a">> := <<"b">> } } =
+        jsx:decode(Body1, [return_maps]),
     ok.
 
 redirect(_Config) ->

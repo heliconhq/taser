@@ -40,15 +40,24 @@
         headers
     }).
 
+request(Method, Lol, Headers, Opts) ->
+    Parent = self(),
+    spawn(fun() ->
+        X = do_request(Method, Lol, Headers, Opts),
+        Parent ! X
+    end),
+    receive
+        Y -> Y
+    end.
 
-request(Method, {Protocol, Auth, Hostname, Port, Path, Query, CombinedPath},
+do_request(Method, {Protocol, Auth, Hostname, Port, Path, Query, CombinedPath},
         Headers, Opts) ->
     GunOpts = gun_opts(Protocol, Opts),
     {ok, ConnPid} = gun:open(Hostname, Port, GunOpts),
     MRef = erlang:monitor(process, ConnPid),
     State = initial_state(ConnPid, MRef, Protocol, Auth, Hostname, Port,
                           Method, Path, Query, CombinedPath, Headers, Opts),
-    handle_connection(State, maps:get(data, Opts, <<>>)).
+    handle_connection(State, prepare_data(Opts)).
 
 handle_connection(State = #state{ conn_pid = ConnPid, mref = MRef, method =
                                   Method, combined_path = Path,
@@ -210,6 +219,13 @@ maybe_add_auth(Auth, Headers) ->
     Auth64 = base64:encode(Auth),
     [{<<"Authorization">>, <<"Basic ", Auth64/binary>>}|Headers].
 
+prepare_data(#{ data := Data }) ->
+    Data;
+prepare_data(#{ form := Form }) ->
+    taser_utils:urlencode_pairs(Form);
+prepare_data(_) ->
+    <<>>.
+
 transport(http) ->
     tcp;
 transport(https) ->
@@ -238,4 +254,3 @@ close(ConnPid, MRef, Reason) ->
     gun:close(ConnPid),
     gun:flush(ConnPid),
     {error, Reason}.
-

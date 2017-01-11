@@ -25,8 +25,10 @@
 -export([get/2]).
 -export([post/2]).
 -export([post/3]).
+-export([post_form/2]).
 -export([put/2]).
 -export([put/3]).
+
 
 start() ->
     application:ensure_all_started(taser).
@@ -45,6 +47,14 @@ post(URL, Data) ->
 
 post(URL, Data, Headers) ->
     request(post, URL, Headers, #{ data => Data }).
+
+post_form(URL, Form) ->
+    post_form(URL, Form, []).
+
+post_form(URL, Form, Headers) ->
+    Header = {"Content-Type", "application/x-www-form-urlencoded"},
+    NewHeaders = [Header|Headers],
+    request(post, URL, NewHeaders, #{ form => Form }).
 
 put(URL, Data) ->
     put(URL, Data, []).
@@ -71,4 +81,3 @@ request(Method, URL, Headers, Opts) ->
         Error ->
             Error
     end.
-
