@@ -26,8 +26,12 @@ Examples:
     {ok, StatusCode, RespHeaders, Body} =
         taser:get("http://user:passwd@httpbin.org/basic-auth/user/passwd").
 
+    {ok, StatusCode, RespHeaders, Body} =
+        taser:post_form("http://httpbin.org/post", #{ key => value }).
+
 ## TODO:
 
+- Headers as maps/tuples/both?
 - Check status on gzip bombs
 - Implement all common verbs
 - Automatically format payloads and inject proper content type (form encoded,

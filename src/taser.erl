@@ -26,6 +26,7 @@
 -export([post/2]).
 -export([post/3]).
 -export([post_form/2]).
+-export([post_form/3]).
 -export([put/2]).
 -export([put/3]).
 

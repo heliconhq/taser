@@ -16,10 +16,10 @@
 
 -export([parse_uri/1]).
 -export([absolute_location/5]).
+-export([urlencode_pairs/1]).
 
 -ifdef(TEST).
 -export([tokenize_querystring/1]).
--export([urlencode_pairs/1]).
 -endif.
 
 parse_uri(URI) ->
