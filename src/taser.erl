@@ -53,7 +53,8 @@ post_form(URL, Form) ->
     post_form(URL, Form, []).
 
 post_form(URL, Form, Headers) ->
-    Header = {"Content-Type", "application/x-www-form-urlencoded"},
+    Header = {"Content-Type",
+              "application/x-www-form-urlencoded; charset=utf-8"},
     NewHeaders = [Header|Headers],
     request(post, URL, NewHeaders, #{ form => Form }).
 
