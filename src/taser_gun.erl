@@ -40,17 +40,7 @@
         headers
     }).
 
-request(Method, Lol, Headers, Opts) ->
-    Parent = self(),
-    spawn(fun() ->
-        X = do_request(Method, Lol, Headers, Opts),
-        Parent ! X
-    end),
-    receive
-        Y -> Y
-    end.
-
-do_request(Method, {Protocol, Auth, Hostname, Port, Path, Query, CombinedPath},
+request(Method, {Protocol, Auth, Hostname, Port, Path, Query, CombinedPath},
         Headers, Opts) ->
     GunOpts = gun_opts(Protocol, Opts),
     {ok, ConnPid} = gun:open(Hostname, Port, GunOpts),
