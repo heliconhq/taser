@@ -225,12 +225,18 @@ method(Method) when is_binary(Method) ->
     binary_to_list(Method);
 method(Method) when is_list(Method) ->
     string:to_upper(Method);
+method(put) ->
+    "PUT";
+method(delete) ->
+    "DELETE";
+method(patch) ->
+    "PATCH";
+method(options) ->
+    "OPTIONS";
 method(get) ->
     "GET";
 method(post) ->
     "POST";
-method(delete) ->
-    "DELETE";
 method(head) ->
     "HEAD".
 

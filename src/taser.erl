@@ -21,15 +21,24 @@
 -export([request/3]).
 -export([request/4]).
 
+-export([delete/1]).
+-export([delete/2]).
 -export([get/1]).
 -export([get/2]).
+-export([head/1]).
+-export([head/2]).
+-export([options/1]).
+-export([options/2]).
+-export([patch/2]).
+-export([patch/3]).
 -export([post/2]).
 -export([post/3]).
 -export([post_form/2]).
 -export([post_form/3]).
 -export([put/2]).
 -export([put/3]).
-
+-export([put_form/2]).
+-export([put_form/3]).
 
 start() ->
     application:ensure_all_started(taser).
@@ -37,11 +46,29 @@ start() ->
 stop() ->
     application:stop(taser).
 
+delete(URL) ->
+    delete(URL, []).
+
+delete(URL, Headers) ->
+    request(delete, URL, Headers).
+
 get(URL) ->
-    request(get, URL, []).
+    get(URL, []).
 
 get(URL, Headers) ->
     request(get, URL, Headers).
+
+head(URL) ->
+    head(URL, []).
+
+head(URL, Headers) ->
+    request(head, URL, Headers).
+
+options(URL) ->
+    options(URL, []).
+
+options(URL, Headers) ->
+    request(options, URL, Headers).
 
 post(URL, Data) ->
     post(URL, Data, []).
@@ -58,11 +85,26 @@ post_form(URL, Form, Headers) ->
     NewHeaders = [Header|Headers],
     request(post, URL, NewHeaders, #{ form => Form }).
 
+patch(URL, Data) ->
+    patch(URL, Data, []).
+
+patch(URL, Data, Headers) ->
+    request(patch, URL, Headers, #{ data => Data }).
+
 put(URL, Data) ->
     put(URL, Data, []).
 
 put(URL, Data, Headers) ->
-    request(post, URL, Headers, #{ data => Data }).
+    request(put, URL, Headers, #{ data => Data }).
+
+put_form(URL, Form) ->
+    put_form(URL, Form, []).
+
+put_form(URL, Form, Headers) ->
+    Header = {"Content-Type",
+              "application/x-www-form-urlencoded; charset=utf-8"},
+    NewHeaders = [Header|Headers],
+    request(put, URL, NewHeaders, #{ form => Form }).
 
 request(Method, URL) ->
     request(Method, URL, [], #{}).

@@ -33,11 +33,9 @@ Examples:
 
 - Headers as maps/tuples/both?
 - Check status on gzip bombs
-- Implement all common verbs
 - Automatically format payloads and inject proper content type (form encoded,
   json, multipart)
 - Max body size
 - Send timeout?
 - Tests and stuff
-- Option to skip body?
 - Add ability to bypass URL-parsing by passing a tuple to `request/4`?

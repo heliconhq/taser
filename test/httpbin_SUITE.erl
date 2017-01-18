@@ -6,19 +6,31 @@
 -export([init_per_suite/1]).
 -export([end_per_suite/1]).
 
--export([get/1]).
--export([redirect/1]).
--export([post_form/1]).
 -export([basic_auth/1]).
+-export([delete/1]).
+-export([get/1]).
+-export([head/1]).
+-export([options/1]).
+-export([patch/1]).
+-export([post/1]).
+-export([post_form/1]).
+-export([put/1]).
+-export([redirect/1]).
 
 %% Callbacks
 
 all() ->
     [
+        basic_auth,
+        delete,
         get,
-        redirect,
+        head,
+        options,
+        patch,
+        post,
         post_form,
-        basic_auth
+        put,
+        redirect
     ].
 
 init_per_suite(Config) ->
@@ -37,8 +49,47 @@ get(_Config) ->
         jsx:decode(Body2, [return_maps]),
     ok.
 
+head(_Config) ->
+    {ok, 200, _Headers, _Body} = taser:head("http://httpbin.org/get"),
+    ok.
+
+options(_Config) ->
+    {ok, 200, _Headers, _Body} = taser:head("http://httpbin.org/"),
+    ok.
+
+put(_Config) ->
+    {ok, 200, _Headers, Body} =
+        taser:put("http://httpbin.org/put", <<"test">>),
+
+        #{ <<"data">> := <<"test">> } =
+            jsx:decode(Body, [return_maps]),
+    ok.
+
+delete(_Config) ->
+    {ok, 200, _Headers, _Body} =
+        taser:delete("http://httpbin.org/delete"),
+
+    ok.
+
+post(_Config) ->
+    {ok, 200, _Headers, Body} =
+        taser:post("http://httpbin.org/post", <<"test">>),
+
+        #{ <<"data">> := <<"test">> } =
+            jsx:decode(Body, [return_maps]),
+    ok.
+
+patch(_Config) ->
+    {ok, 200, _Headers, Body} =
+        taser:patch("http://httpbin.org/patch", <<"test">>),
+
+        #{ <<"data">> := <<"test">> } =
+            jsx:decode(Body, [return_maps]),
+    ok.
+
 post_form(_Config) ->
-    {ok, 200, _Headers1, Body1} = taser:post_form("http://httpbin.org/post", #{ a => b }),
+    {ok, 200, _Headers1, Body1} =
+        taser:post_form("http://httpbin.org/post", #{ a => b }),
     #{ <<"form">> := #{ <<"a">> := <<"b">> } } =
         jsx:decode(Body1, [return_maps]),
     ok.
