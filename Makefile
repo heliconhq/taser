@@ -6,7 +6,7 @@ DEPS = lager gun
 
 TEST_DEPS = jsx
 
-LOCAL_DEPS = inets
+LOCAL_DEPS = inets edoc
 
 include erlang.mk
 
