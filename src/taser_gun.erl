@@ -67,6 +67,7 @@ handle_connection(State = #state{ conn_pid = ConnPid, mref = MRef, method =
         {gun_down, ConnPid, _Transport, Reason, _StreamRefs, _StreamRefs} ->
             close(ConnPid, MRef, Reason);
         Other ->
+            lager:info("Other stuff: ~p", [Other]),
             close(ConnPid, MRef, {conn, Other})
     after ConnTimeout ->
         close(ConnPid, MRef, connect_timeout)
@@ -176,8 +177,14 @@ maybe_deflate(Body, Headers) ->
 
 gun_opts(Protocol, _Opts) ->
     #{
-        transport => transport(Protocol)
+        transport => transport(Protocol),
+        transport_opts => transport_opts(transport(Protocol)) 
     }.
+
+transport_opts(ssl) ->
+    [{versions, ['tlsv1.2']}];
+transport_opts(_) ->
+    [].
 
 initial_state(ConnPid, MRef, Protocol, Auth, Hostname, Port, Method, Path,
               Query, CombinedPath, RequestHeaders, Opts) ->
