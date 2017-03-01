@@ -36,5 +36,10 @@ init([]) ->
         period => 5
     },
     ChildSpecs = [
+        #{
+            id => taser_dns,
+            start => {taser_dns, start_link, []},
+            type => worker
+        }
     ],
     {ok, {SupFlags, ChildSpecs}}.

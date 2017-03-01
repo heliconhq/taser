@@ -43,11 +43,18 @@
 request(Method, {Protocol, Auth, Hostname, Port, Path, Query, CombinedPath},
         Headers, Opts) ->
     GunOpts = gun_opts(Protocol, Opts),
-    {ok, ConnPid} = gun:open(Hostname, Port, GunOpts),
-    MRef = erlang:monitor(process, ConnPid),
-    State = initial_state(ConnPid, MRef, Protocol, Auth, Hostname, Port,
-                          Method, Path, Query, CombinedPath, Headers, Opts),
-    handle_connection(State, prepare_data(Opts)).
+    case taser_dns:lookup(Hostname) of
+        {ok, IP} ->
+            NewHeaders = [{<<"host">>, Hostname}|Headers],
+            {ok, ConnPid} = gun:open(IP, Port, GunOpts),
+            MRef = erlang:monitor(process, ConnPid),
+            State = initial_state(ConnPid, MRef, Protocol, Auth, Hostname, Port,
+                                  Method, Path, Query, CombinedPath,
+                                  NewHeaders, Opts),
+            handle_connection(State, prepare_data(Opts));
+        Error ->
+            Error
+    end.
 
 handle_connection(State = #state{ conn_pid = ConnPid, mref = MRef, method =
                                   Method, combined_path = Path,
@@ -67,7 +74,6 @@ handle_connection(State = #state{ conn_pid = ConnPid, mref = MRef, method =
         {gun_down, ConnPid, _Transport, Reason, _StreamRefs, _StreamRefs} ->
             close(ConnPid, MRef, Reason);
         Other ->
-            lager:info("Other stuff: ~p", [Other]),
             close(ConnPid, MRef, {conn, Other})
     after ConnTimeout ->
         close(ConnPid, MRef, connect_timeout)
@@ -248,11 +254,13 @@ method(head) ->
     "HEAD".
 
 shutdown(ConnPid, MRef) ->
+    lager:info("Shutting down", []),
     erlang:demonitor(MRef, [flush]),
     gun:close(ConnPid),
     gun:flush(ConnPid).
 
 close(ConnPid, MRef, Reason) ->
+    lager:info("Closing due to: ~p", [Reason]),
     erlang:demonitor(MRef, [flush]),
     gun:close(ConnPid),
     gun:flush(ConnPid),
