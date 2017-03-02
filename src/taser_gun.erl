@@ -254,13 +254,11 @@ method(head) ->
     "HEAD".
 
 shutdown(ConnPid, MRef) ->
-    lager:info("Shutting down", []),
     erlang:demonitor(MRef, [flush]),
     gun:close(ConnPid),
     gun:flush(ConnPid).
 
 close(ConnPid, MRef, Reason) ->
-    lager:info("Closing due to: ~p", [Reason]),
     erlang:demonitor(MRef, [flush]),
     gun:close(ConnPid),
     gun:flush(ConnPid),
