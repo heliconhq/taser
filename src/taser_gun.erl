@@ -45,7 +45,7 @@ request(Method, {Protocol, Auth, Hostname, Port, Path, Query, CombinedPath},
     GunOpts = gun_opts(Protocol, Opts),
     case taser_dns:lookup(Hostname) of
         {ok, IP} ->
-            NewHeaders = [{<<"host">>, Hostname}|Headers],
+            NewHeaders = [{<<"host">>, [list_to_binary(Hostname), $:, integer_to_binary(Port)]}|Headers],
             {ok, ConnPid} = gun:open(IP, Port, GunOpts),
             MRef = erlang:monitor(process, ConnPid),
             State = initial_state(ConnPid, MRef, Protocol, Auth, Hostname, Port,
@@ -127,7 +127,9 @@ maybe_follow_redirect(_Finished, #state{ conn_pid = ConnPid, max_redirects =
                     AbsLoc = taser_utils:absolute_location(Location, Protocol,
                                                            Hostname, Port,
                                                            Path),
-                    taser:request(get, AbsLoc, RequestHeaders, #{
+                    RequestHeaders2 = lists:keydelete(<<"host">>, 1,
+                                                      RequestHeaders),
+                    taser:request(get, AbsLoc, RequestHeaders2, #{
                         connect_timeout => ConnTimeout,
                         response_timeout => RespTimeout,
                         follow_redirects => true,

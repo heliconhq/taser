@@ -71,7 +71,6 @@ lookup(Hostname) ->
 %% Callbacks
 
 init([]) ->
-    lager:info("Lookup cache started."),
     inet_db:set_timeout(2000),
     inet_db:set_retry(2),
     TBL1 = ets:new(taser_host_dns_bucket_1, [ordered_set, named_table, public]),
