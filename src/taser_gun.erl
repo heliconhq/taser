@@ -183,15 +183,22 @@ maybe_deflate(Body, Headers) ->
             Body
     end.
 
-gun_opts(Hostname, Protocol, _Opts) ->
+gun_opts(Hostname, Protocol, Opts) ->
     #{
         transport => transport(Protocol),
-        transport_opts => transport_opts(Hostname, transport(Protocol)) 
+        transport_opts => transport_opts(Hostname, Opts, transport(Protocol)) 
     }.
 
-transport_opts(Hostname, ssl) ->
-    [{versions, ['tlsv1.2']}, {server_name_indication, Hostname}];
-transport_opts(_, _) ->
+transport_opts(Hostname, Opts, ssl) ->
+    Versions = case maps:get(use_old_tls_versions, Opts, false) of
+        true -> ['tlsv1.2', 'tlsv1.1', tlsv1, sslv3];
+        _ -> ['tlsv1.2']
+    end,
+    [
+     {versions, Versions},
+     {server_name_indication, Hostname}
+    ];
+transport_opts(_, _, _) ->
     [].
 
 initial_state(ConnPid, MRef, Protocol, Auth, Hostname, Port, Method, Path,
@@ -265,3 +272,4 @@ close(ConnPid, MRef, Reason) ->
     gun:close(ConnPid),
     gun:flush(ConnPid),
     {error, Reason}.
+
