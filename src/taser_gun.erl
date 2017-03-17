@@ -42,7 +42,7 @@
 
 request(Method, {Protocol, Auth, Hostname, Port, Path, Query, CombinedPath},
         Headers, Opts) ->
-    GunOpts = gun_opts(Protocol, Opts),
+    GunOpts = gun_opts(Hostname, Protocol, Opts),
     case taser_dns:lookup(Hostname) of
         {ok, IP} ->
             NewHeaders = [{<<"host">>, [list_to_binary(Hostname), $:, integer_to_binary(Port)]}|Headers],
@@ -183,15 +183,15 @@ maybe_deflate(Body, Headers) ->
             Body
     end.
 
-gun_opts(Protocol, _Opts) ->
+gun_opts(Hostname, Protocol, _Opts) ->
     #{
         transport => transport(Protocol),
-        transport_opts => transport_opts(transport(Protocol)) 
+        transport_opts => transport_opts(Hostname, transport(Protocol)) 
     }.
 
-transport_opts(ssl) ->
-    [{versions, ['tlsv1.2']}];
-transport_opts(_) ->
+transport_opts(Hostname, ssl) ->
+    [{versions, ['tlsv1.2']}, {server_name_indication, Hostname}];
+transport_opts(_, _) ->
     [].
 
 initial_state(ConnPid, MRef, Protocol, Auth, Hostname, Port, Method, Path,
