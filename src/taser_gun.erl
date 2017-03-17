@@ -45,7 +45,7 @@ request(Method, {Protocol, Auth, Hostname, Port, Path, Query, CombinedPath},
     GunOpts = gun_opts(Hostname, Protocol, Opts),
     case taser_dns:lookup(Hostname) of
         {ok, IP} ->
-            NewHeaders = [{<<"host">>, [list_to_binary(Hostname), $:, integer_to_binary(Port)]}|Headers],
+            NewHeaders = [{<<"Host">>, [list_to_binary(Hostname), $:, integer_to_binary(Port)]}|Headers],
             {ok, ConnPid} = gun:open(IP, Port, GunOpts),
             MRef = erlang:monitor(process, ConnPid),
             State = initial_state(ConnPid, MRef, Protocol, Auth, Hostname, Port,
