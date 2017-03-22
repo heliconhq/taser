@@ -35,6 +35,7 @@
         query,
         combined_path,
         request_headers,
+        original_header_name_lookup_table,
 
         status,
         headers
@@ -42,15 +43,22 @@
 
 request(Method, {Protocol, Auth, Hostname, Port, Path, Query, CombinedPath},
         Headers, Opts) ->
-    GunOpts = gun_opts(Hostname, Protocol, Opts),
     case taser_dns:lookup(Hostname) of
         {ok, IP} ->
-            NewHeaders = [{<<"host">>, [list_to_binary(Hostname), $:, integer_to_binary(Port)]}|Headers],
+            {Headers0, HeaderNameTable} = lower_case_headers(Headers),
+            Headers1 = case lists:keymember(<<"host">>, 1, Headers0) of
+                false ->
+                    H = [list_to_binary(Hostname), $:, integer_to_binary(Port)],
+                    [{<<"host">>, H}|Headers0];
+                true ->
+                    Headers0
+            end,
+            GunOpts = gun_opts(Hostname, HeaderNameTable, Protocol, Opts),
             {ok, ConnPid} = gun:open(IP, Port, GunOpts),
             MRef = erlang:monitor(process, ConnPid),
             State = initial_state(ConnPid, MRef, Protocol, Auth, Hostname, Port,
                                   Method, Path, Query, CombinedPath,
-                                  NewHeaders, Opts),
+                                  Headers1, Opts),
             handle_connection(State, prepare_data(Opts));
         Error ->
             Error
@@ -183,8 +191,12 @@ maybe_deflate(Body, Headers) ->
             Body
     end.
 
-gun_opts(Hostname, Protocol, Opts) ->
+gun_opts(Hostname, HeaderNameTable, Protocol, Opts) ->
+    TransformHeaderName = fun(Name) ->
+        maps:get(Name, HeaderNameTable, Name)
+    end,
     #{
+        http_opts => #{ transform_header_name => TransformHeaderName },
         transport => transport(Protocol),
         transport_opts => transport_opts(Hostname, Opts, transport(Protocol)) 
     }.
@@ -273,3 +285,13 @@ close(ConnPid, MRef, Reason) ->
     gun:flush(ConnPid),
     {error, Reason}.
 
+
+lower_case_headers(Headers) ->
+    lists:foldl(fun({Name, Value}, [UpdatedHeaders, NameTable]) ->
+        LowerCaseName = lower_case_binary(Name),
+        {[{LowerCaseName, Value}|UpdatedHeaders],
+         NameTable#{ LowerCaseName => Name }}
+    end, [[], #{}], Headers).
+
+lower_case_binary(Value) ->
+    list_to_binary(string:to_lower(binary_to_list(Value))).
