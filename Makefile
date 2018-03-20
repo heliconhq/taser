@@ -1,11 +1,20 @@
-SHELL_OPTS = -s ${PROJECT} 
+REBAR := "./rebar3"
 
-PROJECT = taser
+.PHONY: build test deps rel shell
 
-DEPS = gun
+all: deps build
 
-TEST_DEPS = jsx
+build:
+	$(REBAR) compile
 
-LOCAL_DEPS = inets edoc
+test:
+	$(REBAR) ct
 
-include erlang.mk
+deps:
+	$(REBAR) get-deps
+
+shell:
+	$(REBAR) shell
+
+rel: test
+	$(REBAR) release

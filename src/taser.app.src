@@ -1,0 +1,13 @@
+{application, 'taser',
+    [{description, "A really simple synchronous wrapper around gun"},
+    {vsn, "0.1.0"},
+    {registered, []},
+    {mod, {'taser_app', []}},
+    {applications,
+        [kernel,
+        stdlib,
+        gun
+        ]},
+    {env,[]},
+    {modules, []}
+    ]}.
