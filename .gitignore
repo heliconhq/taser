@@ -9,5 +9,6 @@ erl_crash.dump
 /.rebar
 /taser.d
 
+/_checkouts
 /_build
 /.erlang.mk
